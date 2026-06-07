@@ -144,6 +144,17 @@ Try these with `@box-forms-builder`:
 Full pilot playbook: [docs/pilot-kickoff.md](docs/pilot-kickoff.md)  
 Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 
+## GitHub
+
+Local git is initialized. To create the remote and push:
+
+```bash
+gh auth login
+npm run setup-github
+```
+
+See [docs/github-setup.md](docs/github-setup.md).
+
 ## Agents
 
 - **box-forms-builder** — `.cursor/agents/box-forms-builder.md`
