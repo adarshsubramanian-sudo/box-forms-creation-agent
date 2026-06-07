@@ -1,178 +1,342 @@
-# Box Forms Creation + Grading Agent System
+# Box Forms Agent — User Guide
 
-Build Box Forms from natural language prompts in your demo Box instance, with automated grading and a continuous improvement loop.
+Build Box Forms from plain English in Cursor. Describe the form you want, watch the agent create it in your Box demo instance, and help make the agent smarter every time you use it.
 
-## Overview
+---
 
-| Component | Purpose |
-|-----------|---------|
-| **Builder agent** | Parses prompts → FormSpec JSON → browser automation → auto-invokes grader |
-| **Grader agent** | Runs after every build; scores output (deterministic + rubric + visual) |
-| **Eval suite** | Regression tests that improve over time |
-| **Feedback loop** | Failed runs become new eval cases and skill examples |
+## What this agent does
 
-Box Forms has no public API. This system uses **browser automation** (cursor-ide-browser MCP) against the Box web UI (Relay → Forms).
+The **Box Forms Agent** is a two-part AI system that runs inside [Cursor IDE](https://cursor.com):
 
-## Quick start
+| Agent | What it does |
+|-------|--------------|
+| **Builder** (`@box-forms-builder`) | Reads your prompt → plans the form → builds it in Box via browser automation |
+| **Grader** (`@box-forms-grader`) | Runs automatically after every build → scores quality → gives actionable feedback |
 
-### 1. Setup
+You only talk to the builder. Grading happens on every run — you never need to invoke the grader yourself.
+
+**Example:** You type:
+
+```
+@box-forms-builder Create a contact form with name, email, and message. All fields required.
+```
+
+The builder will:
+
+1. Translate your prompt into a structured **FormSpec** (a JSON blueprint of the form)
+2. Validate the blueprint before touching the UI
+3. Open Box in the browser (Relay → Forms) and create the form field by field
+4. Capture a preview screenshot
+5. Invoke the grader to score the result
+6. Report back: form URL, scores, and any fixes needed
+
+Box Forms has no public API today, so the builder uses **browser automation** — the same clicks and steps you would make manually in the Box web UI.
+
+---
+
+## How it works (end to end)
+
+```
+Your prompt in Cursor chat
+        ↓
+   FormSpec JSON          ← structured plan (fields, logic, branding)
+        ↓
+   Box web UI             ← browser automation creates the live form
+        ↓
+   Run log                ← saved locally (prompt, spec, scores)
+        ↓
+   Grader                 ← scores intent match, field quality, logic, visuals
+        ↓
+   You review results     ← optionally export & submit to improve the agent
+```
+
+---
+
+## What you need
+
+| Requirement | Required? | Notes |
+|-------------|-----------|-------|
+| [Cursor IDE](https://cursor.com) | Yes | Browser MCP must be enabled (default in Cursor) |
+| Box demo or enterprise account | Yes | You need access to Relay → Forms |
+| Node.js 18+ and Python 3 | Yes | For validation scripts |
+| Git | Yes | To clone this repo |
+| `CURSOR_API_KEY` | No | Only needed if you run batch evals — not for normal use |
+
+**Important:** Use your **own Box demo account**. Do not share one Box login across multiple people building forms at the same time — it causes session conflicts and duplicate form titles.
+
+---
+
+## Setup (one time)
+
+### 1. Clone the repo
 
 ```bash
-cd "/Users/adarshsubramanian/Forms Creation Agent"
-cp .env.example .env
-# Edit .env: set BOX_DEMO_URL and CURSOR_API_KEY (for batch evals)
+git clone https://github.com/adarshsubramanian-sudo/box-forms-creation-agent.git
+cd box-forms-creation-agent
+```
 
+### 2. Install dependencies
+
+```bash
 npm install
 ```
 
-### 2. Interactive build (Cursor IDE)
-
-1. Log into your Box demo instance in the browser.
-2. In Cursor chat, invoke the builder subagent (grading runs automatically afterward):
-
-   ```
-   @box-forms-builder Create a contact form with name, email, and message fields
-   ```
-
-   The builder invokes the grader when the form is built — you do not need a separate grading step.
-
-### 3. Validate a FormSpec
+### 3. Configure your Box instance
 
 ```bash
-npm run validate-spec -- path/to/form-spec.json
+cp .env.example .env
 ```
 
-### 4. Run eval suite (Cursor SDK)
+Edit `.env` and set your Box URL (no trailing slash):
 
-```bash
-npm run eval
-# Dry run (no SDK calls):
-npm run eval:dry
+```
+BOX_DEMO_URL=https://your-enterprise.app.box.com
 ```
 
-Reports are written to `data/runs/eval_report_<date>.json`.
+Never commit `.env` — it is gitignored.
 
-### 5. Export a run for feedback (pilot participants)
+### 4. Log into Box
+
+Before your first build, open your Box instance in the browser and sign in. The agent reuses your browser session. If your session expires, the agent will pause and ask you to log in again.
+
+### 5. You're ready
+
+Open this project in Cursor. You're set to start building forms.
+
+---
+
+## How to use the agent
+
+### Basic usage
+
+In Cursor chat, mention the builder and describe the form you want:
+
+```
+@box-forms-builder Create an employee onboarding form with full name, start date,
+department dropdown (Engineering, Sales, Marketing, Other), and show an "Other
+Department" text field when Other is selected.
+```
+
+Watch the browser automation work in the Box UI. When the build finishes, you'll see:
+
+- **Run ID** — unique identifier for this build (e.g. `20260607-190104-contact`)
+- **Box form URL** — link to the form in Box
+- **Screenshot** — preview of the built form
+- **Scores** — grader results (see below)
+- **Feedback** — what went well or what needs fixing
+
+### What the builder supports
+
+| Capability | Example prompt fragment |
+|------------|-------------------------|
+| Text fields | "full name, email, message" |
+| Choice fields | "dropdown with options A, B, C" / "radio buttons for Yes/No" |
+| Required fields | "all fields required" |
+| Conditional logic | "if Other is selected, show a text field" |
+| File upload | "include a file upload for documents" |
+| Branding | "use theme color #0061D5" |
+| Numbers | "amount as a number field" |
+
+### Starter prompts to try
+
+Copy these into Cursor chat to get started:
+
+**1. Simple contact form**
+
+```
+@box-forms-builder Create a contact form with full name, email address, and message
+fields. All fields should be required.
+```
+
+**2. Onboarding with conditional logic**
+
+```
+@box-forms-builder Create an employee onboarding form with full name, start date,
+department dropdown (Engineering, Sales, Marketing, Other), and a conditional
+other department text field when Other is selected.
+```
+
+**3. Benefits enrollment**
+
+```
+@box-forms-builder Create a benefits enrollment form. Ask if enrolling in health
+insurance (Yes/No radio). If Yes, show dropdown for plan tier (Basic, Plus,
+Premium). If No, show a long text reason field.
+```
+
+**4. Your own prompt**
+
+Try describing a real form you need — HR intake, vendor onboarding, event RSVP, support tickets. Custom prompts often produce the most valuable feedback for improving the agent.
+
+### If something goes wrong
+
+| Situation | What to do |
+|-----------|------------|
+| Login page appears | Sign into Box in the browser, then ask the builder to retry |
+| Form title conflict | The builder auto-appends a timestamp — retry if it persists |
+| Form doesn't match intent | Note the run ID, export it (see below), and submit feedback |
+| Browser step fails | The builder saves a partial run — export and report what failed |
+
+You can ask the builder to retry with grader fixes:
+
+```
+@box-forms-builder Retry run 20260607-190104-contact with these fixes:
+1. Add conditional logic for Other department
+```
+
+---
+
+## Understanding grader output
+
+After every build, the grader scores the result on three layers:
+
+| Layer | What it checks | Weight |
+|-------|----------------|--------|
+| **L1 Deterministic** | Schema valid? Required fields present? Logic rules exist? | 40% |
+| **L2 Rubric** | Does the form match your intent? Good labels? Sensible UX? | 35% |
+| **L3 Visual** | Does the preview match the spec? Field order correct? | 25% |
+
+You'll see an **overall score** (0.0–1.0) and **pass/fail**. If it fails, the grader provides:
+
+- **Feedback** — what was wrong (e.g. "Department 'Other' logic missing")
+- **Suggested fixes** — concrete steps to fix it (e.g. "Add if Department equals Other then show Other Department")
+
+This helps you in the moment. It also becomes the raw material for improving the agent system-wide (see next section).
+
+---
+
+## How your usage improves the agent
+
+This is a **learning system**. Every person who uses the builder generates signal that makes future builds better — but only when that signal is shared back.
+
+### The flywheel
+
+```
+You build a form
+      ↓
+Grader scores it locally
+      ↓
+You export the run (anonymized)
+      ↓
+You submit via GitHub Issue
+      ↓
+Maintainer reviews & ingests into eval suite
+      ↓
+Everyone pulls the update → smarter builder
+```
+
+### Why this matters
+
+- **More diverse prompts** expose edge cases the original eval set missed (ambiguous wording, tricky conditional logic, branding requests)
+- **Failures with corrections** become new test cases — the builder must pass them in future eval runs
+- **Repeat patterns** update the grading rubric so the same mistake gets caught consistently
+- **High-scoring examples** become few-shot patterns in the builder skill
+
+Your usage directly shapes what the agent learns. The more varied prompts you try — especially ones that fail in interesting ways — the faster the system improves.
+
+### How to submit your run (3 steps)
+
+**Step 1 — Export** (strips Box URLs and sensitive paths):
 
 ```bash
 npm run export-run -- --run-id <run_id>
 ```
 
-Writes an anonymized JSON to `data/exports/` (no Box URLs). Submit via GitHub Issue — see [CONTRIBUTING.md](CONTRIBUTING.md).
+This creates `data/exports/{run_id}.export.json` with your prompt, FormSpec, scores, and feedback.
 
-### 6. Ingest feedback from a failed run (maintainers)
+**Step 2 — Review** the export file. Remove anything you don't want shared.
 
-```bash
-npm run ingest-feedback -- --run-id <run_id> [--corrected-spec path/to/fixed.json]
-```
+**Step 3 — Submit** a GitHub Issue using the **Eval contribution** template:
+
+1. Go to the repo → Issues → New Issue → **Eval contribution**
+2. Paste the export JSON (or attach the file)
+3. Describe what you expected vs what you got
+4. Optionally include a corrected FormSpec if you fixed the form manually
+
+Maintainers review submissions weekly and promote the best ones into the shared eval suite.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
+
+---
+
+## What gets saved locally
+
+Every build creates files on your machine (not uploaded automatically):
+
+| File | Contents |
+|------|----------|
+| `data/runs/{run_id}.json` | Run summary (prompt, status, scores, URLs) |
+| `data/runs/{run_id}.spec.json` | FormSpec blueprint |
+| `data/runs/{run_id}.png` | Preview screenshot |
+| `data/runs/runs.jsonl` | Append-only log of all runs |
+
+These are gitignored — they stay on your machine unless you explicitly export and submit them.
+
+---
+
+## Tips for best results
+
+1. **Be specific** — "Create a PTO request form with employee name, start date, end date, PTO type dropdown (Vacation, Sick, Personal), and reason" works better than "make a PTO form"
+2. **Mention required fields** — say "all required" or call out optional fields explicitly
+3. **Describe logic in plain English** — "if Yes, show X; if No, show Y" is enough
+4. **One form per prompt** — don't ask for multiple forms in one message
+5. **Submit interesting runs** — passes and failures both help; edge cases are especially valuable
+6. **Use your own Box account** — don't share sessions with other pilot users
+
+---
+
+## For maintainers
+
+If you're running the pilot or maintaining the eval suite:
+
+| Task | Command / doc |
+|------|---------------|
+| Ingest a submitted run | `npm run ingest-feedback -- --run-id <id> [--corrected-spec path]` |
+| Run eval suite | `npm run eval` |
+| Pilot playbook | [docs/pilot-kickoff.md](docs/pilot-kickoff.md) |
+| Improvement loop | [docs/improvement-workflow.md](docs/improvement-workflow.md) |
+| GitHub setup | [docs/github-setup.md](docs/github-setup.md) |
+
+---
 
 ## Project structure
 
 ```
 .cursor/
-  agents/           # Builder and grader subagent definitions
-  skills/box-forms/ # FormSpec schema, UI map, validation scripts
-specs/              # JSON Schema for FormSpec
-evals/              # Eval cases, rubric, golden specs
-scripts/            # SDK eval runner, feedback ingestion, export
-data/runs/          # Append-only run history (gitignored JSON artifacts)
-data/exports/       # Anonymized exports for GitHub submission (gitignored)
+  agents/              # Builder and grader agent definitions
+  skills/box-forms/    # FormSpec schema, UI map, validation scripts
+evals/                 # Shared eval cases, rubric, golden specs
+scripts/               # Export, ingest, eval runner
+specs/                 # FormSpec JSON schema
+data/runs/             # Your local run history (gitignored)
+docs/                  # Pilot guide, improvement workflow, GitHub setup
 ```
 
-## FormSpec workflow
-
-```
-Natural language prompt
-        ↓
-   FormSpec JSON  ← validate with validate_spec.py
-        ↓
-   Box web UI (browser automation)
-        ↓
-   Run artifact (data/runs/{run_id}.json)
-        ↓
-   Grader (L1 deterministic → L2 rubric → L3 visual)
-```
-
-## Credentials
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `BOX_DEMO_URL` | Yes | e.g. `https://your-enterprise.app.box.com` |
-| `CURSOR_API_KEY` | For evals | Cursor SDK API key |
-| `BOX_SESSION_FILE` | Optional | Saved session for headless runs |
-
-Never commit `.env` or session files.
-
-## Continuous improvement
-
-1. Every build is logged to `data/runs/`.
-2. Grader failures include actionable feedback.
-3. Use `ingest-feedback` to promote corrections into `evals/cases.jsonl` and `evals/golden/`.
-4. Update `evals/rubric.md` when the same failure repeats 3+ times.
-5. Re-run `npm run eval` to measure pass-rate improvement.
-
-See [docs/improvement-workflow.md](docs/improvement-workflow.md) for the full loop.
-
-## Pilot program
-
-Share the agent with a small cohort (5–15 users) to gather diverse prompts and grader signal.
-
-### Prerequisites for participants
-
-| Requirement | Required for interactive builds? |
-|-------------|-------------------------------|
-| Cursor IDE + browser MCP | Yes |
-| Box demo account (`BOX_DEMO_URL`) | Yes |
-| `CURSOR_API_KEY` | No — only for batch evals |
-
-Each participant should use their **own Box demo account** — avoid shared concurrent browser automation.
-
-### Starter prompts
-
-Try these with `@box-forms-builder`:
-
-1. **Contact form** — "Create a contact form with full name, email address, and message fields. All fields should be required."
-2. **Onboarding with logic** — "Create an employee onboarding form with full name, start date, department dropdown (Engineering, Sales, Marketing, Other), and a conditional other department text field when Other is selected."
-3. **Conditional benefits** — "Create a benefits enrollment form. Ask if enrolling in health insurance (Yes/No radio). If Yes, show dropdown for plan tier (Basic, Plus, Premium). If No, show a long text reason field."
-
-### Submitting feedback
-
-1. Export: `npm run export-run -- --run-id <run_id>`
-2. Open a GitHub Issue using the **Eval contribution** template
-3. Maintainers ingest curated submissions into `evals/` weekly
-
-Full pilot playbook: [docs/pilot-kickoff.md](docs/pilot-kickoff.md)  
-Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-
-## GitHub
-
-Local git is initialized. To create the remote and push:
-
-```bash
-gh auth login
-npm run setup-github
-```
-
-See [docs/github-setup.md](docs/github-setup.md).
-
-## Agents
-
-- **box-forms-builder** — `.cursor/agents/box-forms-builder.md`
-- **box-forms-grader** — `.cursor/agents/box-forms-grader.md`
-
-## Eval categories
-
-| Category | Cases |
-|----------|-------|
-| Simple intake | contact, feedback |
-| HR / onboarding | new hire, PTO |
-| Conditional logic | show/hide, enable/disable |
-| File collection | upload + metadata |
-| Branding | theme + logo |
-| Edge / adversarial | ambiguous prompts, duplicate titles |
+---
 
 ## Constraints
 
-- **Unique form titles** — builder appends a timestamp suffix automatically.
-- **Session expiry** — re-authenticate in browser when login page is detected.
-- **No Forms API** — UI automation may be flaky; FormSpec validation runs before UI work.
+- **Unique form titles** — Box requires unique names; the builder appends a timestamp automatically
+- **Session expiry** — re-authenticate in the browser when prompted
+- **No Forms API** — browser automation can be slower or flaky; validation runs before UI work to catch errors early
+- **Improvement is curated** — runs don't auto-upload; you export and submit, maintainers ingest after review
+
+---
+
+## Quick reference
+
+| I want to… | Do this |
+|------------|---------|
+| Build a form | `@box-forms-builder <describe your form>` |
+| Export a run for feedback | `npm run export-run -- --run-id <id>` |
+| Submit feedback | GitHub Issue → Eval contribution template |
+| Retry after grader feedback | `@box-forms-builder Retry run <id> with these fixes: ...` |
+| Validate a FormSpec manually | `npm run validate-spec -- path/to/spec.json` |
+
+---
+
+## Questions?
+
+- **Usage & feedback:** [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Pilot program:** [docs/pilot-kickoff.md](docs/pilot-kickoff.md)
+- **How the system improves:** [docs/improvement-workflow.md](docs/improvement-workflow.md)
