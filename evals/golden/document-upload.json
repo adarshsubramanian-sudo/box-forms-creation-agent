@@ -1,0 +1,29 @@
+{
+  "title": "Document Submission-GOLDEN",
+  "description": "Applicant document upload form",
+  "fields": [
+    {
+      "id": "applicant_name",
+      "type": "short_text",
+      "label": "Applicant Name",
+      "required": true
+    },
+    {
+      "id": "document_type",
+      "type": "dropdown",
+      "label": "Document Type",
+      "required": true,
+      "options": [
+        { "value": "resume", "label": "Resume" },
+        { "value": "id", "label": "ID" },
+        { "value": "certificate", "label": "Certificate" }
+      ]
+    },
+    {
+      "id": "document_file",
+      "type": "file_upload",
+      "label": "Document Upload",
+      "required": true
+    }
+  ]
+}

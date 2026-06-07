@@ -1,0 +1,14 @@
+{
+  "min_fields": 4,
+  "required_fields": [
+    "Subject",
+    "Priority",
+    "Description"
+  ],
+  "field_types": [
+    "short_text",
+    "dropdown",
+    "long_text",
+    "file_upload"
+  ]
+}

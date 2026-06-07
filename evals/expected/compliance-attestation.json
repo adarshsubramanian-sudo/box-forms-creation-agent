@@ -1,0 +1,11 @@
+{
+  "min_fields": 3,
+  "required_fields": [
+    "Employee Name"
+  ],
+  "field_types": [
+    "short_text",
+    "checkbox",
+    "file_upload"
+  ]
+}

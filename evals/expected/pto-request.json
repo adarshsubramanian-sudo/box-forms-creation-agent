@@ -1,0 +1,16 @@
+{
+  "min_fields": 5,
+  "required_fields": [
+    "Employee Name",
+    "Start Date",
+    "End Date",
+    "PTO Type"
+  ],
+  "field_types": [
+    "short_text",
+    "short_text",
+    "short_text",
+    "dropdown",
+    "long_text"
+  ]
+}

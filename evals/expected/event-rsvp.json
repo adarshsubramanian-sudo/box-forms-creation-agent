@@ -1,0 +1,13 @@
+{
+  "min_fields": 4,
+  "required_fields": [
+    "Guest Name",
+    "Email"
+  ],
+  "field_types": [
+    "short_text",
+    "email",
+    "number",
+    "long_text"
+  ]
+}

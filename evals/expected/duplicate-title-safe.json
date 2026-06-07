@@ -1,0 +1,7 @@
+{
+  "min_fields": 2,
+  "required_fields": [
+    "Name",
+    "Email"
+  ]
+}

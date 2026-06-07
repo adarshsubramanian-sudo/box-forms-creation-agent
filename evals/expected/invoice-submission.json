@@ -1,0 +1,14 @@
+{
+  "min_fields": 4,
+  "required_fields": [
+    "Vendor Name",
+    "Invoice Number",
+    "Amount"
+  ],
+  "field_types": [
+    "short_text",
+    "short_text",
+    "number",
+    "file_upload"
+  ]
+}

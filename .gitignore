@@ -1,0 +1,14 @@
+.env
+node_modules/
+__pycache__/
+*.pyc
+.Python
+.venv/
+venv/
+data/runs/*.json
+data/runs/*.jsonl
+data/runs/*.png
+!data/runs/.gitkeep
+data/exports/
+data/box-session.json
+.DS_Store

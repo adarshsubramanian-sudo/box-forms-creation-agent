@@ -1,0 +1,13 @@
+{
+  "min_fields": 3,
+  "required_fields": [
+    "Full Name",
+    "Email Address",
+    "Message"
+  ],
+  "field_types": [
+    "short_text",
+    "email",
+    "long_text"
+  ]
+}

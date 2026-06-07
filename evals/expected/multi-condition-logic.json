@@ -1,0 +1,9 @@
+{
+  "min_fields": 3,
+  "must_have_logic": true,
+  "field_types": [
+    "dropdown",
+    "number",
+    "short_text"
+  ]
+}

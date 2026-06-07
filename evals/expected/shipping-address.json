@@ -1,0 +1,10 @@
+{
+  "min_fields": 4,
+  "must_have_logic": true,
+  "field_types": [
+    "checkbox",
+    "short_text",
+    "short_text",
+    "short_text"
+  ]
+}

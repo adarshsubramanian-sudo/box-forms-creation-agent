@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://box.com/schemas/form-spec.json",
+  "title": "Box FormSpec",
+  "description": "Intermediate representation for Box Forms builder and grader agents.",
+  "type": "object",
+  "required": ["title", "fields"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Unique form title (Box requires unique titles as of March 2026)."
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Display name; may duplicate across forms."
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "branding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "theme_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "header_logo_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/field"
+      }
+    },
+    "logic": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/logicRule"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "object",
+      "description": "Optional criteria for grader when not using eval case expected block.",
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source_prompt": { "type": "string" },
+        "run_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "$defs": {
+    "fieldType": {
+      "type": "string",
+      "enum": [
+        "short_text",
+        "long_text",
+        "checkbox",
+        "radio",
+        "dropdown",
+        "number",
+        "file_upload",
+        "email",
+        "metadata"
+      ]
+    },
+    "field": {
+      "type": "object",
+      "required": ["id", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": { "$ref": "#/$defs/fieldType" },
+        "label": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean", "default": false },
+        "placeholder": { "type": "string" },
+        "help_text": { "type": "string" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "value": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min_length": { "type": "integer", "minimum": 0 },
+            "max_length": { "type": "integer", "minimum": 1 },
+            "min_value": { "type": "number" },
+            "max_value": { "type": "number" },
+            "pattern": { "type": "string" }
+          }
+        },
+        "metadata_template": {
+          "type": "string",
+          "description": "Box metadata template key when type is metadata."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "enum": ["radio", "dropdown", "checkbox"] } },
+            "required": ["type"]
+          },
+          "then": { "required": ["options"] }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "metadata" } },
+            "required": ["type"]
+          },
+          "then": { "required": ["metadata_template"] }
+        }
+      ]
+    },
+    "logicOperator": {
+      "type": "string",
+      "enum": [
+        "equals",
+        "not_equals",
+        "contains",
+        "not_contains",
+        "is_empty",
+        "is_not_empty",
+        "greater_than",
+        "less_than"
+      ]
+    },
+    "logicCondition": {
+      "type": "object",
+      "required": ["field_id", "operator"],
+      "additionalProperties": false,
+      "properties": {
+        "field_id": { "type": "string" },
+        "operator": { "$ref": "#/$defs/logicOperator" },
+        "value": {}
+      }
+    },
+    "logicOutcome": {
+      "type": "string",
+      "enum": ["show", "hide", "enable", "disable"]
+    },
+    "logicRule": {
+      "type": "object",
+      "required": ["id", "conditions", "match", "outcome", "target_field_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "match": {
+          "type": "string",
+          "enum": ["all", "any"],
+          "description": "All conditions or any condition must match."
+        },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/logicCondition" }
+        },
+        "outcome": { "$ref": "#/$defs/logicOutcome" },
+        "target_field_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

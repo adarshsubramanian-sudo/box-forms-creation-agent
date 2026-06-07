@@ -1,0 +1,11 @@
+{
+  "min_fields": 3,
+  "required_fields": [
+    "Rating"
+  ],
+  "field_types": [
+    "dropdown",
+    "checkbox",
+    "long_text"
+  ]
+}

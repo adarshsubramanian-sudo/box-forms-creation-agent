@@ -1,0 +1,26 @@
+{
+  "title": "Contact Us-GOLDEN",
+  "description": "General contact form",
+  "fields": [
+    {
+      "id": "full_name",
+      "type": "short_text",
+      "label": "Full Name",
+      "required": true,
+      "placeholder": "Jane Doe"
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Email Address",
+      "required": true
+    },
+    {
+      "id": "message",
+      "type": "long_text",
+      "label": "Message",
+      "required": true,
+      "placeholder": "How can we help?"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "box-forms-creation-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync-expected": "tsx scripts/sync_expected.ts",
+    "eval": "tsx scripts/run_evals.ts",
+    "eval:dry": "tsx scripts/run_evals.ts --dry-run",
+    "ingest-feedback": "tsx scripts/ingest_feedback.ts",
+    "export-run": "tsx scripts/export_run.ts",
+    "validate-spec": "python3 .cursor/skills/box-forms/scripts/validate_spec.py",
+    "score-run": "python3 .cursor/skills/box-forms/scripts/score_run.py"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.0.18"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Branded Contact-GOLDEN",
+  "description": "Branded contact form with Box blue theme",
+  "branding": {
+    "theme_color": "#0061D5"
+  },
+  "fields": [
+    {
+      "id": "name",
+      "type": "short_text",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Email",
+      "required": true
+    },
+    {
+      "id": "message",
+      "type": "long_text",
+      "label": "Message",
+      "required": true
+    }
+  ]
+}

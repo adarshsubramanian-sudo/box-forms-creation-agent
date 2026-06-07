@@ -1,0 +1,48 @@
+{
+  "title": "Employee Onboarding-GOLDEN",
+  "description": "New employee onboarding intake",
+  "fields": [
+    {
+      "id": "full_name",
+      "type": "short_text",
+      "label": "Full Name",
+      "required": true
+    },
+    {
+      "id": "start_date",
+      "type": "short_text",
+      "label": "Start Date",
+      "required": true,
+      "placeholder": "YYYY-MM-DD"
+    },
+    {
+      "id": "department",
+      "type": "dropdown",
+      "label": "Department",
+      "required": true,
+      "options": [
+        { "value": "engineering", "label": "Engineering" },
+        { "value": "sales", "label": "Sales" },
+        { "value": "marketing", "label": "Marketing" },
+        { "value": "other", "label": "Other" }
+      ]
+    },
+    {
+      "id": "other_department",
+      "type": "short_text",
+      "label": "Other Department",
+      "required": false
+    }
+  ],
+  "logic": [
+    {
+      "id": "show_other_dept",
+      "match": "all",
+      "conditions": [
+        { "field_id": "department", "operator": "equals", "value": "other" }
+      ],
+      "outcome": "show",
+      "target_field_ids": ["other_department"]
+    }
+  ]
+}

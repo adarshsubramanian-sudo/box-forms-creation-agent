@@ -1,0 +1,9 @@
+{
+  "min_fields": 3,
+  "must_have_logic": true,
+  "field_types": [
+    "radio",
+    "short_text",
+    "short_text"
+  ]
+}

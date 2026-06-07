@@ -1,0 +1,12 @@
+{
+  "min_fields": 3,
+  "required_fields": [
+    "Applicant Name",
+    "Document Type"
+  ],
+  "field_types": [
+    "short_text",
+    "dropdown",
+    "file_upload"
+  ]
+}

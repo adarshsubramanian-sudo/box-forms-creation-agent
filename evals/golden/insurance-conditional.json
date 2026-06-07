@@ -1,0 +1,62 @@
+{
+  "title": "Benefits Enrollment-GOLDEN",
+  "description": "Health insurance enrollment with conditional fields",
+  "fields": [
+    {
+      "id": "enroll_health",
+      "type": "radio",
+      "label": "Enrolling in Health Insurance?",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" }
+      ]
+    },
+    {
+      "id": "plan_tier",
+      "type": "dropdown",
+      "label": "Plan Tier",
+      "required": true,
+      "options": [
+        { "value": "basic", "label": "Basic" },
+        { "value": "plus", "label": "Plus" },
+        { "value": "premium", "label": "Premium" }
+      ]
+    },
+    {
+      "id": "decline_reason",
+      "type": "long_text",
+      "label": "Reason for Declining",
+      "required": false
+    }
+  ],
+  "logic": [
+    {
+      "id": "show_plan_tier",
+      "match": "all",
+      "conditions": [
+        { "field_id": "enroll_health", "operator": "equals", "value": "yes" }
+      ],
+      "outcome": "show",
+      "target_field_ids": ["plan_tier"]
+    },
+    {
+      "id": "show_decline_reason",
+      "match": "all",
+      "conditions": [
+        { "field_id": "enroll_health", "operator": "equals", "value": "no" }
+      ],
+      "outcome": "show",
+      "target_field_ids": ["decline_reason"]
+    },
+    {
+      "id": "hide_plan_when_no",
+      "match": "all",
+      "conditions": [
+        { "field_id": "enroll_health", "operator": "equals", "value": "no" }
+      ],
+      "outcome": "hide",
+      "target_field_ids": ["plan_tier"]
+    }
+  ]
+}

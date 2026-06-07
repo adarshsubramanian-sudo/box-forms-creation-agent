@@ -1,0 +1,12 @@
+{
+  "min_fields": 3,
+  "required_fields": [
+    "Name",
+    "Laptop Preference"
+  ],
+  "field_types": [
+    "short_text",
+    "radio",
+    "checkbox"
+  ]
+}
