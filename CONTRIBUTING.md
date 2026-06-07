@@ -1,6 +1,26 @@
 # Contributing to the Box Forms Agent
 
-Thank you for helping improve the builder and eval suite. This project improves through **curated feedback** — your runs become better eval cases when reviewed and ingested.
+Thank you for helping improve the builder and eval suite. This project improves through **feedback loops** — your runs and ratings become eval cases that make future builds better.
+
+## Human rating (automatic)
+
+After every interactive build, the builder asks you to rate the form **1–10** (10 = best) and optionally leave a comment.
+
+- **Low ratings (≤6)** automatically create eval cases from your prompt (full auto-ingest)
+- **High ratings (≥9) + grader pass** automatically promote the FormSpec as a golden reference
+- Ratings are stored locally in `data/runs/{run_id}.json` and `data/runs/ratings.jsonl`
+
+You can also rate manually:
+
+```bash
+npm run record-rating -- --run-id <run_id> --rating 8 --comment "Looks good"
+```
+
+Or in chat:
+
+```
+@box-forms-builder Rate run <run_id> 8/10 optional comment
+```
 
 ## Prerequisites
 
@@ -38,6 +58,7 @@ This writes an anonymized JSON to `data/exports/{run_id}.export.json` with:
 - Source prompt
 - FormSpec (no Box URLs)
 - Grader scores, feedback, and suggested fixes
+- Human rating and comment (if collected)
 
 Review the file before sharing. Remove anything sensitive if you added custom labels or options.
 

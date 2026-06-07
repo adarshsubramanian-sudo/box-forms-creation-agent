@@ -14,6 +14,7 @@ Briefly describe what you tried and whether the result matched your intent.
 
 - **Run ID:** (from `data/runs/{run_id}.json`)
 - **Pass / fail:** (from grader output)
+- **Human rating (1–10):** (from builder prompt or export JSON)
 - **Category:** (e.g. conditional_logic, branding, edge_case — or "custom")
 
 ## Source prompt

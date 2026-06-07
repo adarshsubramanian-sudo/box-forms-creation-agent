@@ -19,6 +19,7 @@ description: >-
 3. **Materialize** the spec in Box via browser automation (Relay → Forms).
 4. **Save** run artifact to `data/runs/{run_id}.json`.
 5. **Grade** — builder always invokes `@box-forms-grader` (via Task) before finishing; grading is not optional.
+6. **Rate** — builder asks user for 1–10 rating + optional comment, runs `npm run record-rating`.
 
 Only proceed to browser automation when validation passes.
 
@@ -125,6 +126,42 @@ Save to `data/runs/{run_id}.json`:
   "completed_at": "2026-06-07T14:32:10Z"
 }
 ```
+
+### Human feedback (after user rates)
+
+```json
+"human_feedback": {
+  "rating": 7,
+  "comment": "Missing conditional logic for Other department",
+  "collected_at": "2026-06-07T20:00:00Z",
+  "grader_overall": 0.9875,
+  "grader_human_delta": 0.2875,
+  "auto_ingested": true,
+  "auto_ingested_case_id": "human-rating-20260607-143022-contact"
+}
+```
+
+Append rating events to `data/runs/ratings.jsonl`.
+
+## Human rating (Step 7)
+
+After grading, the builder **must** ask:
+
+> How would you rate the form built by the agent on a scale of 1 to 10 (10 = best, 1 = worst)?
+
+Then optionally: *"Any additional feedback?"*
+
+Persist with:
+
+```bash
+npm run record-rating -- --run-id {run_id} --rating {1-10} [--comment "..."]
+```
+
+Learning loop triggers (see `.env` thresholds):
+- Rating ≤ 6 → auto-ingest eval case from prompt (no bad golden)
+- Rating ≥ 9 + grader pass → auto-ingest + promote golden spec
+
+Skip for batch eval runs (`eval_case_id` set) or when `human_feedback` already exists.
 
 ## Examples
 

@@ -28,7 +28,8 @@ The builder will:
 3. Open Box in the browser (Relay → Forms) and create the form field by field
 4. Capture a preview screenshot
 5. Invoke the grader to score the result
-6. Report back: form URL, scores, and any fixes needed
+6. Ask you to rate the form (1–10) and optionally leave a comment
+7. Report back: form URL, scores, rating status, and any fixes needed
 
 Box Forms has no public API today, so the builder uses **browser automation** — the same clicks and steps you would make manually in the Box web UI.
 
@@ -47,7 +48,9 @@ Your prompt in Cursor chat
         ↓
    Grader                 ← scores intent match, field quality, logic, visuals
         ↓
-   You review results     ← optionally export & submit to improve the agent
+   You rate the form      ← mandatory 1–10 rating + optional comment
+        ↓
+   Learning loop          ← low ratings auto-ingest eval cases; high ratings promote golden specs
 ```
 
 ---
@@ -124,6 +127,7 @@ Watch the browser automation work in the Box UI. When the build finishes, you'll
 - **Screenshot** — preview of the built form
 - **Scores** — grader results (see below)
 - **Feedback** — what went well or what needs fixing
+- **Rating prompt** — you'll be asked to rate the form 1–10 before the session ends
 
 ### What the builder supports
 
@@ -205,6 +209,28 @@ This helps you in the moment. It also becomes the raw material for improving the
 
 ---
 
+## Human rating (every build)
+
+After grading, the builder **always** asks:
+
+> How would you rate the form built by the agent on a scale of 1 to 10 (10 = best, 1 = worst)?
+
+You can also add an optional comment. Your rating is saved locally and feeds the learning loop:
+
+| Your rating | What happens automatically |
+|-------------|---------------------------|
+| **≤ 6** | New eval case created from your prompt (prompt-derived expected criteria) |
+| **≥ 9** + grader pass | FormSpec promoted to golden reference |
+| Grader disagrees (large delta) | Flagged for rubric calibration |
+
+Rate manually if needed:
+
+```bash
+npm run record-rating -- --run-id <run_id> --rating 8 --comment "Looks good"
+```
+
+---
+
 ## How your usage improves the agent
 
 This is a **learning system**. Every person who uses the builder generates signal that makes future builds better — but only when that signal is shared back.
@@ -216,13 +242,16 @@ You build a form
       ↓
 Grader scores it locally
       ↓
-You export the run (anonymized)
+You rate it 1–10 (+ optional comment)
       ↓
-You submit via GitHub Issue
+Low ratings → auto-ingest eval cases
+High ratings → auto-promote golden specs
       ↓
-Maintainer reviews & ingests into eval suite
+Optionally export & submit via GitHub Issue
       ↓
-Everyone pulls the update → smarter builder
+Maintainer merges eval/rubric updates → everyone pulls
+      ↓
+Smarter builder on next run
 ```
 
 ### Why this matters
@@ -269,6 +298,7 @@ Every build creates files on your machine (not uploaded automatically):
 | `data/runs/{run_id}.spec.json` | FormSpec blueprint |
 | `data/runs/{run_id}.png` | Preview screenshot |
 | `data/runs/runs.jsonl` | Append-only log of all runs |
+| `data/runs/ratings.jsonl` | Human rating event log |
 
 These are gitignored — they stay on your machine unless you explicitly export and submit them.
 
@@ -291,6 +321,8 @@ If you're running the pilot or maintaining the eval suite:
 
 | Task | Command / doc |
 |------|---------------|
+| Record human rating | `npm run record-rating -- --run-id <id> --rating <1-10>` |
+| Summarize ratings | `npm run summarize-ratings` |
 | Ingest a submitted run | `npm run ingest-feedback -- --run-id <id> [--corrected-spec path]` |
 | Run eval suite | `npm run eval` |
 | Pilot playbook | [docs/pilot-kickoff.md](docs/pilot-kickoff.md) |
@@ -319,7 +351,7 @@ docs/                  # Pilot guide, improvement workflow, GitHub setup
 - **Unique form titles** — Box requires unique names; the builder appends a timestamp automatically
 - **Session expiry** — re-authenticate in the browser when prompted
 - **No Forms API** — browser automation can be slower or flaky; validation runs before UI work to catch errors early
-- **Improvement is curated** — runs don't auto-upload; you export and submit, maintainers ingest after review
+- **Improvement is local-first** — ratings auto-ingest eval cases on your machine; share exports via GitHub when ready
 
 ---
 
@@ -328,6 +360,7 @@ docs/                  # Pilot guide, improvement workflow, GitHub setup
 | I want to… | Do this |
 |------------|---------|
 | Build a form | `@box-forms-builder <describe your form>` |
+| Rate a build | Answer the 1–10 prompt, or `npm run record-rating -- --run-id <id> --rating <1-10>` |
 | Export a run for feedback | `npm run export-run -- --run-id <id>` |
 | Submit feedback | GitHub Issue → Eval contribution template |
 | Retry after grader feedback | `@box-forms-builder Retry run <id> with these fixes: ...` |

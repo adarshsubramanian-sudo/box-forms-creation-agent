@@ -116,6 +116,38 @@ If grading failed or could not run, say so explicitly and include the run id.
 
 If this is a retry after grader feedback, incorporate all `suggested_fixes` from the prior run before re-validating.
 
+### Step 7: Collect human rating (mandatory for interactive builds)
+
+After Step 6, **always** collect user feedback before ending the session.
+
+**Skip Step 7 when:**
+- `eval_case_id` is set (batch eval run)
+- The run artifact already has `human_feedback.rating`
+
+**Rating flow:**
+
+1. Use **AskQuestion** with one question: *"How would you rate the form built by the agent on a scale of 1 to 10 (10 = best, 1 = worst)?"* — options `1` through `10`.
+2. Ask in chat: *"Any additional feedback? (optional — reply 'skip' to continue)"*
+3. Persist the rating:
+
+```bash
+npm run record-rating -- --run-id {run_id} --rating {1-10} [--comment "..."]
+```
+
+4. Tell the user what happened:
+   - Rating recorded
+   - If rating ≤ 6: auto-ingested as eval case (prompt-derived expected criteria)
+   - If rating ≥ 9 and grader pass: auto-ingested + golden spec promoted
+   - If grader-human delta > 0.25: note disagreement flag for rubric calibration
+
+**Fallback:** If the user replies in a follow-up message instead of AskQuestion:
+
+```
+@box-forms-builder Rate run {run_id} 8/10 optional comment here
+```
+
+Parse the rating (integer 1–10) and optional comment, then run `record-rating` as above.
+
 ## Eval mode
 
 When `eval_case_id` is provided:
@@ -137,6 +169,7 @@ When `eval_case_id` is provided:
 
 - Skip FormSpec validation
 - Skip grader invocation — every run must be graded before you respond
+- Skip human rating (Step 7) for interactive builds
 - Commit credentials or session tokens
 - Hardcode browser element refs across snapshots
 - Edit the plan file or rubric unless explicitly asked

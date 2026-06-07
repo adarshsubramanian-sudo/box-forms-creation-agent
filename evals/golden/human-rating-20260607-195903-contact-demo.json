@@ -1,0 +1,26 @@
+{
+  "title": "Contact Us-20260607-195903",
+  "description": "Simple contact form for rating demo",
+  "fields": [
+    {
+      "id": "full_name",
+      "type": "short_text",
+      "label": "Full Name",
+      "required": true,
+      "placeholder": "Jane Doe"
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Email Address",
+      "required": true
+    },
+    {
+      "id": "message",
+      "type": "long_text",
+      "label": "Message",
+      "required": true,
+      "placeholder": "How can we help?"
+    }
+  ]
+}

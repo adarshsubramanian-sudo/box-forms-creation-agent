@@ -39,6 +39,14 @@ interface RunArtifact {
   feedback?: string[];
   suggested_fixes?: string[];
   fields_created?: Array<{ label: string; type: string; required?: boolean }>;
+  human_feedback?: {
+    rating: number;
+    comment?: string;
+    grader_overall?: number;
+    grader_human_delta?: number;
+    disagreement_flag?: boolean;
+    auto_ingested?: boolean;
+  };
 }
 
 interface ExportPayload {
@@ -57,6 +65,13 @@ interface ExportPayload {
   deterministic_failures: string[];
   rubric_version?: string;
   fields_created?: Array<{ label: string; type: string; required?: boolean }>;
+  human_feedback?: {
+    rating: number;
+    comment?: string;
+    grader_overall?: number;
+    grader_human_delta?: number;
+    disagreement_flag?: boolean;
+  } | null;
   notes: string;
 }
 
@@ -131,6 +146,15 @@ function buildExport(runId: string, run: RunArtifact): ExportPayload {
     deterministic_failures: scored?.deterministic_failures ?? [],
     rubric_version: scored?.rubric_version,
     fields_created: run.fields_created,
+    human_feedback: run.human_feedback
+      ? {
+          rating: run.human_feedback.rating,
+          comment: run.human_feedback.comment,
+          grader_overall: run.human_feedback.grader_overall,
+          grader_human_delta: run.human_feedback.grader_human_delta,
+          disagreement_flag: run.human_feedback.disagreement_flag,
+        }
+      : null,
     notes:
       "Anonymized export — Box URLs and screenshot paths removed. " +
       "Submit via GitHub Issue (Eval contribution template) or PR.",

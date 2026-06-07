@@ -5,7 +5,7 @@ Use this guide to run a 5–15 person pilot of the Box Forms builder + grader sy
 ## Goals
 
 1. **Experience** — Participants try natural-language → live Box Form in Cursor
-2. **Signal** — Diverse prompts and grader scores feed the shared eval corpus via curated feedback
+2. **Signal** — Diverse prompts, grader scores, and human 1–10 ratings feed the eval corpus automatically
 
 ## Prerequisites per participant
 
@@ -50,20 +50,23 @@ Participants may also try their own prompts — those often produce the best eva
 
 1. Build a form with `@box-forms-builder`
 2. Review grader output in chat
-3. If interesting (pass or fail), export the run:
+3. **Rate the form** when prompted (1–10 scale + optional comment) — the builder asks automatically
+4. Low ratings (≤6) auto-create eval cases locally; high ratings (≥9 + pass) auto-promote golden specs
+5. Optionally export and share interesting runs:
    ```bash
    npm run export-run -- --run-id <run_id>
    ```
-4. Submit via GitHub Issue (Eval contribution template) or post export JSON in pilot channel
+6. Submit via GitHub Issue (Eval contribution template) or post export JSON in pilot channel
 
 ### Maintainer weekly ritual (30–60 min)
 
 | Step | Action |
 |------|--------|
+| Ratings | `npm run summarize-ratings` → review avg rating, buckets, grader-human delta |
 | Triage | Review Issue submissions and pilot channel exports |
 | Curate | Anonymize; reject duplicates or low-signal cases |
-| Ingest | `npm run ingest-feedback -- --run-id <id> [--corrected-spec path] [--promote-golden]` |
-| Rubric | If same failure appears 3+ times, update `evals/rubric.md` version |
+| Ingest | Manual path: `npm run ingest-feedback -- --run-id <id> [--corrected-spec path]` |
+| Rubric | If same failure appears 3+ times or disagreement flags spike, update `evals/rubric.md` |
 | Measure | `npm run eval` → compare pass rate to previous `data/runs/eval_report_*.json` |
 | Release | Merge eval/rubric changes to `main`; notify pilot to `git pull` |
 
@@ -75,22 +78,25 @@ Participants may also try their own prompts — those often produce the best eva
 |--------|----------------|
 | Time to first form | Onboarding call or survey |
 | Completion rate | % who finish all 3 starter prompts |
-| Intent match | Qualitative: "Did the form match what you asked for?" (1–5) |
+| Intent match | In-agent 1–10 rating (automatic after each build) |
 
 ### Learning
 
 | Metric | How to measure |
 |--------|----------------|
+| Average human rating | `npm run summarize-ratings` |
+| Auto-ingested from low ratings | `category: from_human_rating` in `evals/cases.jsonl` |
 | Submissions per week | Count GitHub Issues + channel exports |
-| Novel cases ingested | New lines in `evals/cases.jsonl` with `category: from_feedback` |
+| Novel cases ingested | New lines in `evals/cases.jsonl` |
 | Pass rate trend | `eval_report_*.json` summary over time |
+| Grader-human disagreement | `disagreement_flag` count in `ratings_summary.json` |
 | Repeat failure patterns | `data/runs/feedback.jsonl` |
 
 ## What not to do
 
 - **Don't share one Box account** across many concurrent builders — title collisions and session conflicts
-- **Don't auto-merge unreviewed exports** — quality regressions are possible
 - **Don't commit `.env` or run artifacts** — use `export_run.ts` for sharing
+- **Run `npm run eval` after batches of auto-ingested cases** — low ratings create eval cases automatically; verify pass rate doesn't regress
 
 ## Escalation
 

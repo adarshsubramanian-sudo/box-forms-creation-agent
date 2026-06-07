@@ -11,13 +11,19 @@ Builder creates form → Run logged (data/runs/)
        ↓
 Grader scores (L1 → L2 → L3)
        ↓
-   Pass? ──yes──→ Archive as positive example (optional)
+Builder asks human rating (1–10) + optional comment
+       ↓
+record-rating → ratings.jsonl
+       ↓
+   Rating ≤ 6? ──yes──→ Auto-ingest eval case (prompt-derived expected)
        │
-       no
+   Rating ≥ 9 + pass? ──yes──→ Auto-ingest + promote golden spec
+       │
+   Grader-human delta > 0.25? ──yes──→ Flag for rubric calibration
        ↓
-Human review OR builder retry with suggested_fixes
+Human review OR builder retry with suggested_fixes (optional)
        ↓
-ingest-feedback → new eval case + optional golden spec
+ingest-feedback → new eval case + optional golden spec (manual path)
        ↓
 Rubric/skill update if pattern repeats
        ↓
@@ -40,6 +46,42 @@ Every build appends to `data/runs/runs.jsonl`:
 ```
 
 Full artifacts live in `data/runs/{run_id}.json` (gitignored).
+
+## Human ratings
+
+After every interactive build, the builder asks for a 1–10 rating. Persist with:
+
+```bash
+npm run record-rating -- --run-id <run_id> --rating <1-10> [--comment "..."]
+```
+
+Ratings append to `data/runs/ratings.jsonl`. Each run may include:
+
+```json
+"human_feedback": {
+  "rating": 4,
+  "comment": "Missing conditional logic",
+  "grader_overall": 0.85,
+  "grader_human_delta": 0.45,
+  "disagreement_flag": true,
+  "auto_ingested": true,
+  "auto_ingested_case_id": "human-rating-20260607-143022-contact"
+}
+```
+
+**Auto-ingest triggers** (configurable in `.env`):
+
+| Condition | Action |
+|-----------|--------|
+| Rating ≤ `HUMAN_RATING_LOW_THRESHOLD` (default 6) | Auto-ingest eval case with prompt-derived expected (no bad golden) |
+| Rating ≥ `HUMAN_RATING_HIGH_THRESHOLD` (default 9) + grader pass | Auto-ingest + promote golden spec |
+| `\|rating/10 - scored.overall\| > GRADER_HUMAN_DELTA_THRESHOLD` | Set `disagreement_flag` for rubric review |
+
+Summarize weekly:
+
+```bash
+npm run summarize-ratings
+```
 
 ## Ingesting feedback
 
@@ -112,6 +154,9 @@ npm run eval:dry
 | L1/L2/L3 breakdown | Individual run scores |
 | Human override rate | Runs with `ingested: true` after manual fix |
 | Repeat failure patterns | `feedback.jsonl` |
+| Average human rating | `ratings_summary.json` or `summarize-ratings` |
+| Grader-human correlation | Mean delta in `ratings_summary.json` |
+| Auto-ingested from ratings | Count in `ratings_summary.json` |
 
 ## Scheduled evals (optional)
 
@@ -143,4 +188,5 @@ Max 2 retries per eval case before marking as fail.
 | `evals/golden/*.json` | Reference FormSpecs for structural diff |
 | `evals/rubric.md` | Grading rubric (versioned) |
 | `data/runs/runs.jsonl` | Append-only event log |
+| `data/runs/ratings.jsonl` | Human rating event log |
 | `data/runs/feedback.jsonl` | Ingestion audit trail |
