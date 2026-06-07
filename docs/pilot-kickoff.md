@@ -31,6 +31,7 @@ Use this guide to run a 5–15 person pilot of the Box Forms builder + grader sy
 2. Invite pilot users with read access
 3. Share this doc + [README](../README.md) pilot section
 4. Confirm each user can run one starter prompt successfully
+5. Optional: share the [browser demo recording](../docs/assets/demo-onboarding-conditional.mp4) so participants know what to expect
 
 ## Starter prompts (week 1)
 

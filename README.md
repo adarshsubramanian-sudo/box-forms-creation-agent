@@ -2,6 +2,14 @@
 
 Build Box Forms from plain English in Cursor. Describe the form you want, watch the agent create it in your Box demo instance, and help make the agent smarter every time you use it.
 
+## See it in action
+
+Watch the browser automation half of the agent build an employee onboarding form with conditional logic (show **Other Department** when Department is **Other**):
+
+[docs/assets/demo-onboarding-conditional.mp4](docs/assets/demo-onboarding-conditional.mp4)
+
+The full agent also runs in Cursor chat with FormSpec validation, grading, and a human rating step — the video focuses on the Box Relay → Forms UI workflow only.
+
 ---
 
 ## What this agent does
