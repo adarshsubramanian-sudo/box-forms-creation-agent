@@ -54,7 +54,9 @@ Participants may also try their own prompts — those often produce the best eva
 4. Low ratings (≤6) auto-create eval cases locally; high ratings (≥9 + pass) auto-promote golden specs
 5. Optionally export and share interesting runs:
    ```bash
-   npm run export-run -- --run-id <run_id>
+   npm run export-runs -- --run-ids <id1>,<id2>
+   # or: npm run export-runs -- --since 2026-06-07
+   npm run create-eval-issue -- --run-ids <id1>,<id2> --summary "Pilot week 1"
    ```
 6. Submit via GitHub Issue (Eval contribution template) or post export JSON in pilot channel
 

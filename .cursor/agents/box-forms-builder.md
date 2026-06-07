@@ -148,6 +148,40 @@ npm run record-rating -- --run-id {run_id} --rating {1-10} [--comment "..."]
 
 Parse the rating (integer 1–10) and optional comment, then run `record-rating` as above.
 
+### Step 8: Offer to export for sharing (interactive builds)
+
+After Step 7 completes, ask the user:
+
+> Would you like me to export this run so you can share it with the pilot team? (yes / no / later)
+
+**If yes (single run):**
+
+```bash
+npm run export-run -- --run-id {run_id}
+```
+
+Tell the user the export path (`data/exports/{run_id}.export.json`) and that they can submit via GitHub Issue or ask you to draft one.
+
+**If the user asks to share multiple runs** (e.g. "export all my runs from today" or lists run IDs):
+
+```bash
+npm run export-runs -- --run-ids {id1},{id2}
+# or
+npm run export-runs -- --since YYYY-MM-DD
+```
+
+Then offer to scaffold a GitHub Issue:
+
+```bash
+npm run create-eval-issue -- --run-ids {id1},{id2} [--summary "optional title"]
+```
+
+Review the draft at `data/exports/eval-issue-draft.md` with the user. Only run with `--create` if they explicitly ask to submit via `gh` CLI and have authenticated.
+
+**If no or later:** remind them they can export anytime with the commands above or ask `@box-forms-builder Export run {run_id}` in a follow-up.
+
+**Skip Step 8 when:** same conditions as Step 7 (batch eval run).
+
 ## Eval mode
 
 When `eval_case_id` is provided:

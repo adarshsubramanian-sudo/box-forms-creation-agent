@@ -163,6 +163,16 @@ Learning loop triggers (see `.env` thresholds):
 
 Skip for batch eval runs (`eval_case_id` set) or when `human_feedback` already exists.
 
+## Sharing runs (Step 8)
+
+After rating, the builder offers to export for sharing. Commands:
+
+```bash
+npm run export-run -- --run-id {run_id}
+npm run export-runs -- --run-ids {id1},{id2}   # or --since YYYY-MM-DD
+npm run create-eval-issue -- --run-ids {ids} [--summary "..."] [--create]
+```
+
 ## Examples
 
 ### Example 1: Simple contact form

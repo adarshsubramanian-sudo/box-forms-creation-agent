@@ -53,6 +53,13 @@ After a build completes (grader runs automatically):
 npm run export-run -- --run-id <run_id>
 ```
 
+For multiple runs:
+
+```bash
+npm run export-runs -- --run-ids <id1>,<id2>
+npm run export-runs -- --since 2026-06-07
+```
+
 This writes an anonymized JSON to `data/exports/{run_id}.export.json` with:
 
 - Source prompt
@@ -63,6 +70,14 @@ This writes an anonymized JSON to `data/exports/{run_id}.export.json` with:
 Review the file before sharing. Remove anything sensitive if you added custom labels or options.
 
 ### 2. Open a GitHub Issue
+
+Scaffold a draft (recommended for batch submissions):
+
+```bash
+npm run create-eval-issue -- --run-ids <id1>,<id2> [--summary "Pilot week 1"]
+```
+
+Review `data/exports/eval-issue-draft.md`, then submit via GitHub Issues or add `--create` with authenticated `gh` CLI.
 
 Use the **Eval contribution** issue template (`.github/ISSUE_TEMPLATE/eval-contribution.md`):
 

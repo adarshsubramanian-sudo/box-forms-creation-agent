@@ -29,6 +29,9 @@ Export locally before submitting:
 
 ```bash
 npm run export-run -- --run-id <run_id>
+# multiple runs:
+npm run export-runs -- --run-ids <id1>,<id2>
+npm run create-eval-issue -- --run-ids <id1>,<id2> [--summary "Pilot week 1"]
 ```
 
 Paste the contents of `data/exports/{run_id}.export.json` below, or attach the file.

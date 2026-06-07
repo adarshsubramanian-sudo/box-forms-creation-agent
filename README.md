@@ -50,6 +50,8 @@ Your prompt in Cursor chat
         ↓
    You rate the form      ← mandatory 1–10 rating + optional comment
         ↓
+   Export offer           ← builder asks if you want to share (yes / no / later)
+        ↓
    Learning loop          ← low ratings auto-ingest eval cases; high ratings promote golden specs
 ```
 
@@ -128,6 +130,15 @@ Watch the browser automation work in the Box UI. When the build finishes, you'll
 - **Scores** — grader results (see below)
 - **Feedback** — what went well or what needs fixing
 - **Rating prompt** — you'll be asked to rate the form 1–10 before the session ends
+- **Export offer** — after rating, the builder asks if you want to export the run for sharing
+
+After several builds, you can share everything in one go — ask in chat:
+
+```
+@box-forms-builder Export all my runs from today and draft a GitHub issue for the pilot team.
+```
+
+Or run the commands yourself (see [How to submit your run](#how-to-submit-your-run-3-steps) below).
 
 ### What the builder supports
 
@@ -271,18 +282,48 @@ Your usage directly shapes what the agent learns. The more varied prompts you tr
 npm run export-run -- --run-id <run_id>
 ```
 
+For multiple runs at once:
+
+```bash
+npm run export-runs -- --run-ids <id1>,<id2>
+# or all runs from a date:
+npm run export-runs -- --since 2026-06-07
+```
+
 This creates `data/exports/{run_id}.export.json` with your prompt, FormSpec, scores, and feedback.
 
 **Step 2 — Review** the export file. Remove anything you don't want shared.
 
 **Step 3 — Submit** a GitHub Issue using the **Eval contribution** template:
 
-1. Go to the repo → Issues → New Issue → **Eval contribution**
-2. Paste the export JSON (or attach the file)
-3. Describe what you expected vs what you got
-4. Optionally include a corrected FormSpec if you fixed the form manually
+1. Scaffold a draft issue (optional but recommended for batch submissions):
+
+```bash
+npm run create-eval-issue -- --run-ids <id1>,<id2> [--summary "Pilot week 1"]
+```
+
+Review `data/exports/eval-issue-draft.md`, then either paste it into GitHub Issues → **Eval contribution**, or add `--create` to submit via `gh` CLI.
+
+2. Or manually: repo → Issues → New Issue → **Eval contribution**
+3. Paste the export JSON (or attach the file)
+4. Describe what you expected vs what you got
+5. Optionally include a corrected FormSpec if you fixed the form manually
 
 Maintainers review submissions weekly and promote the best ones into the shared eval suite.
+
+### Share multiple runs at once
+
+After trying several prompts (e.g. the three starter prompts), export and submit in one batch:
+
+```bash
+npm run summarize-ratings                                    # optional overview
+npm run export-runs -- --since 2026-06-07                      # or --run-ids id1,id2,id3
+npm run create-eval-issue -- --run-ids id1,id2,id3 --summary "Pilot week 1"
+```
+
+Review `data/exports/eval-issue-draft.md`, then paste into GitHub Issues or add `--create` to submit with the `gh` CLI.
+
+You can also ask `@box-forms-builder` to run these commands for you in Cursor chat.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
@@ -299,6 +340,8 @@ Every build creates files on your machine (not uploaded automatically):
 | `data/runs/{run_id}.png` | Preview screenshot |
 | `data/runs/runs.jsonl` | Append-only log of all runs |
 | `data/runs/ratings.jsonl` | Human rating event log |
+| `data/exports/{run_id}.export.json` | Anonymized export for sharing (created on demand) |
+| `data/exports/eval-issue-draft.md` | Draft GitHub Issue from `create-eval-issue` |
 
 These are gitignored — they stay on your machine unless you explicitly export and submit them.
 
@@ -311,7 +354,8 @@ These are gitignored — they stay on your machine unless you explicitly export 
 3. **Describe logic in plain English** — "if Yes, show X; if No, show Y" is enough
 4. **One form per prompt** — don't ask for multiple forms in one message
 5. **Submit interesting runs** — passes and failures both help; edge cases are especially valuable
-6. **Use your own Box account** — don't share sessions with other pilot users
+6. **Batch-share at end of session** — run several prompts, then export all at once with `export-runs` and `create-eval-issue`
+7. **Use your own Box account** — don't share sessions with other pilot users
 
 ---
 
@@ -362,6 +406,9 @@ docs/                  # Pilot guide, improvement workflow, GitHub setup
 | Build a form | `@box-forms-builder <describe your form>` |
 | Rate a build | Answer the 1–10 prompt, or `npm run record-rating -- --run-id <id> --rating <1-10>` |
 | Export a run for feedback | `npm run export-run -- --run-id <id>` |
+| Export multiple runs | `npm run export-runs -- --run-ids <id1>,<id2>` or `--since YYYY-MM-DD` |
+| Draft GitHub Issue from exports | `npm run create-eval-issue -- --run-ids <ids> [--create]` |
+| Share all runs from a date | `npm run export-runs -- --since YYYY-MM-DD` then `create-eval-issue` |
 | Submit feedback | GitHub Issue → Eval contribution template |
 | Retry after grader feedback | `@box-forms-builder Retry run <id> with these fixes: ...` |
 | Validate a FormSpec manually | `npm run validate-spec -- path/to/spec.json` |

@@ -9,6 +9,8 @@
     "eval:dry": "tsx scripts/run_evals.ts --dry-run",
     "ingest-feedback": "tsx scripts/ingest_feedback.ts",
     "export-run": "tsx scripts/export_run.ts",
+    "export-runs": "tsx scripts/export_runs.ts",
+    "create-eval-issue": "tsx scripts/create_eval_issue.ts",
     "record-rating": "tsx scripts/record_human_rating.ts",
     "summarize-ratings": "tsx scripts/summarize_ratings.ts",
     "setup-github": "bash scripts/setup_github_remote.sh",
